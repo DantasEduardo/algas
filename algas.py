@@ -11,7 +11,7 @@ from sys import getsizeof
 mydb = mysql.connector.connect(
     host = "localhost",
     user = 'root',
-    password = "----------",
+    password = "yh@852147",
     database = "test"
 )
 mycursor = mydb.cursor()
@@ -21,11 +21,7 @@ sql_query2 = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,
 
 
 def transaction(block):
-    bytes_used = [] 
-    cpu_used = []   
-    ram_used = []   
-    time_taken = [] 
-    
+    print("Started transaction testing...")    
     for value in block: 
         start_time = time() 
         bytes_int = 0 
@@ -40,11 +36,6 @@ def transaction(block):
         cpu = psutil.cpu_percent()
         ram = psutil.virtual_memory().percent
 
-        bytes_used.append(bytes_int)
-        cpu_used.append(cpu)
-        ram_used.append(ram - 50)
-        time_taken.append(execution_time)
-
         mycursor.execute(sql_query, [execution_time, bytes_int, cpu, ram])
         mycursor.execute(sql_query2, ["BMP180", atmospheric_pressure, date.today()])
         mycursor.execute(sql_query2, ["anemometro", air_speed, date.today()])
@@ -56,15 +47,19 @@ def transaction(block):
 def main(params):
     blocks = []
     if params.first:
+        print("Setting first test")
         blocks.append([x for x in range(1, 1000, 100)])
 
     if params.second:
+        print("Setting second test")
         blocks.append([x for x in range(1, 1000, 10)])
 
     if params.third:
+        print("Setting third test")
         blocks.append([x for x in range(1, 1000, 1)])
 
     if params.all:
+        print("Setting all tests")
         blocks = [
             block for block in 
             [
