@@ -21,4 +21,5 @@ CREATE TABLE IF NOT EXISTS `infos` (
     bytes_used  DOUBLE,                    
     cpu_used  DOUBLE,
     ram_used DOUBLE
+    ingestion_date  DATE 
 );

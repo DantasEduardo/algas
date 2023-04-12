@@ -3,7 +3,6 @@ import psutil
 import random
 import time
 import mysql.connector
-from matplotlib import pyplot as plt
 from time import time, sleep
 from datetime import date
 from sys import getsizeof 
@@ -21,16 +20,17 @@ mydb = mysql.connector.connect(
     host = "localhost",
     user = 'root',
     password = "----------",
-    database = "test"
+    database = "grupo4"
 )
 mycursor = mydb.cursor()
 
-sql_query = f"INSERT INTO test_1(sensor, time_taken, bytes_used, cpu_used, ram_used) VALUES ('sensor',%s,%s,%s,%s)"
+sql_query = f"INSERT INTO test_1(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES ('sensor',%s,%s,%s,%s)"
 sql_query2 = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
 
 
 def transaction(block):
     print("Started transaction testing...")
+    data = date.today()
     for value in block: 
         start_time = time() 
         bytes_int = 0 
@@ -45,9 +45,9 @@ def transaction(block):
         cpu = psutil.cpu_percent()
         ram = psutil.virtual_memory().percent
 
-        mycursor.execute(sql_query, [execution_time, bytes_int, cpu, ram])
-        mycursor.execute(sql_query2, ["BMP180", atmospheric_pressure, date.today()])
-        mycursor.execute(sql_query2, ["anemometro", air_speed, date.today()])
+        mycursor.execute(sql_query, [execution_time, bytes_int, cpu, ram, data])
+        mycursor.execute(sql_query2, ["BMP180", atmospheric_pressure, data])
+        mycursor.execute(sql_query2, ["anemometro", air_speed, data])
         mydb.commit()
     
     print(f"{value} concluded")
