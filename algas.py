@@ -1,12 +1,21 @@
 import argparse
 import psutil
 import random
+import time
 import mysql.connector
 from matplotlib import pyplot as plt
 from time import time, sleep
 from datetime import date
 from sys import getsizeof 
 
+def time_execution(fn):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = fn(*args, **kwargs)
+        end = time.time()
+        print(f'INFO: Executed in {end - start} seconds.\n\n')
+        return result
+    return wrapper
 
 mydb = mysql.connector.connect(
     host = "localhost",
@@ -21,11 +30,7 @@ sql_query2 = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,
 
 
 def transaction(block):
-    bytes_used = [] 
-    cpu_used = []   
-    ram_used = []   
-    time_taken = [] 
-    
+    print("Started transaction testing...")
     for value in block: 
         start_time = time() 
         bytes_int = 0 
@@ -40,11 +45,6 @@ def transaction(block):
         cpu = psutil.cpu_percent()
         ram = psutil.virtual_memory().percent
 
-        bytes_used.append(bytes_int)
-        cpu_used.append(cpu)
-        ram_used.append(ram - 50)
-        time_taken.append(execution_time)
-
         mycursor.execute(sql_query, [execution_time, bytes_int, cpu, ram])
         mycursor.execute(sql_query2, ["BMP180", atmospheric_pressure, date.today()])
         mycursor.execute(sql_query2, ["anemometro", air_speed, date.today()])
@@ -52,19 +52,23 @@ def transaction(block):
     
     print(f"{value} concluded")
 
-
+@time_execution
 def main(params):
     blocks = []
     if params.first:
+        print("Setting first test")
         blocks.append([x for x in range(1, 1000, 100)])
 
     if params.second:
+        print("Setting second test")
         blocks.append([x for x in range(1, 1000, 10)])
 
     if params.third:
+        print("Setting third test")
         blocks.append([x for x in range(1, 1000, 1)])
 
     if params.all:
+        print("Setting all tests")
         blocks = [
             block for block in 
             [
