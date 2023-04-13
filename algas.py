@@ -1,9 +1,8 @@
 import argparse
 import psutil
 import random
-import time
 import mysql.connector
-from time import time, sleep
+import time
 from datetime import date
 from sys import getsizeof 
 
@@ -24,7 +23,7 @@ mydb = mysql.connector.connect(
 )
 mycursor = mydb.cursor()
 
-sql_query = f"INSERT INTO test_1(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES ('sensor',%s,%s,%s,%s)"
+sql_query = f"INSERT INTO infos(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES (%s,%s,%s,%s,%s)"
 sql_query2 = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
 
 
@@ -32,14 +31,14 @@ def transaction(block):
     print("Started transaction testing...")
     data = date.today()
     for value in block: 
-        start_time = time() 
+        start_time = time.time() 
         bytes_int = 0 
         for i in range(value): 
             air_speed = round(random.uniform(0, 120),2) 
             atmospheric_pressure = round(random.uniform(1000, 1020),2) 
             bytes_int = bytes_int + getsizeof(air_speed) + getsizeof(atmospheric_pressure)
-            sleep(0.01)
-            end_time = time()
+            time.sleep(0.01)
+            end_time = time.time()
         
         execution_time = end_time - start_time
         cpu = psutil.cpu_percent()
