@@ -1,13 +1,16 @@
 import argparse
 import psutil
 import random
-import mysql.connector
 import time
 from datetime import date
 from sys import getsizeof 
-from sensores.anemometro import Anemometro
-from sensores.bmp180 import BPM180
+from src.sensores.anemometro import Anemometro
+from src.sensores.bmp180 import BPM180
+from src.utils.save_data import SaveData
 
+
+QUERY_INFOS = f"INSERT INTO infos(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES (%s,%s,%s,%s,%s)"
+QUERY_MEDIDAS = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
 
 
 def time_execution(fn):
@@ -19,19 +22,7 @@ def time_execution(fn):
         return result
     return wrapper
 
-mydb = mysql.connector.connect(
-    host = "localhost",
-    user = 'root',
-    password = "----------",
-    database = "grupo4"
-)
-mycursor = mydb.cursor()
-
-sql_query = f"INSERT INTO infos(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES (%s,%s,%s,%s,%s)"
-sql_query2 = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
-
-
-def transaction_test(block):
+def transaction_test(block, bd):
     print("Started transaction testing...")
     data = date.today()
     for value in block: 
@@ -48,22 +39,38 @@ def transaction_test(block):
         cpu = psutil.cpu_percent()
         ram = psutil.virtual_memory().percent
 
-        mycursor.execute(sql_query, [execution_time, bytes_int, cpu, ram, data])
-        mycursor.execute(sql_query2, ["BMP180", atmospheric_pressure, data])
-        mycursor.execute(sql_query2, ["anemometro", air_speed, data])
-        mydb.commit()
-    
+        bd.insert(QUERY_INFOS, [execution_time, bytes_int, cpu, ram, data])
+        bd.insert(QUERY_MEDIDAS, ["BMP180", atmospheric_pressure, data])
+        bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
+
     print(f"{value} concluded")
 
-def run():
+def run(bd):
     bpm = BPM180()
     anemometro = Anemometro()
 
-    while True:
-        temperature = bpm.simulate_temperature()
-        pressure = bpm.simulate_pressure()
-        air_speed = anemometro.simulate_speed_air()
+    temperature_mean = bpm.generate_temperature_mean()
+    pressure_mean = bpm.generate_pressure_mean()
+    air_speed_mean = anemometro.generate_speed_air_mean()
 
+    count = 60
+    while True:
+        data = date.today()
+        if count < 60:
+            temperature_mean = bpm.generate_temperature_mean()
+            pressure_mean = bpm.generate_pressure_mean()
+            air_speed_mean = anemometro.generate_speed_air_mean()
+            count -= 1
+        
+        temperature = bpm.simulate_temperature(temperature_mean)
+        pressure = bpm.simulate_pressure(pressure_mean)
+        air_speed = anemometro.simulate_speed_air(air_speed_mean)
+
+        bd.insert(QUERY_MEDIDAS, ["BMP180", pressure, data])
+        bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
+        bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
+
+        count -= 1
 
 
 @time_execution
@@ -98,12 +105,16 @@ def main(params):
         ]
 
     if test:
+        mybd = SaveData()
         for block in blocks:
-            transaction_test(block)
+            transaction_test(block, mybd)
+
     elif params.run:
-        run()
+        run(mybd)
+        
     else:    
         raise Exception('Parameters not set.\nType -h to see all parameters.')    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
