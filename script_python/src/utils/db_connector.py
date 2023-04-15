@@ -2,15 +2,19 @@ import awswrangler as wr
 import pandas as pd
 import mysql.connector
 
-class SaveData:
+class DBConnector:
     def __init__(self, host:str='localhost', user:str='root', password:str=None, database:str=None):
         """Create a connection to the database"""
-        self.mydb = mysql.connector.connect(
-            host = host,
-            user = user,
-            password = password,
-            database = database
-        )
+        try:
+            self.mydb = mysql.connector.connect(
+                host = host,
+                user = user,
+                password = password,
+                database = database,
+                port = "3306"
+            )
+        except:
+            raise Exception("Could not connect to database. Please verify your credentials and host settings") 
 
         self.mycursor = self.mydb.cursor()
 
