@@ -1,7 +1,7 @@
 import argparse
 import getpass
 import time
-from src.utils.save_data import SaveData
+from src.utils.db_connector import DBConnector
 import src.algas as algas 
 
 def time_execution(fn):
@@ -45,7 +45,10 @@ def main(params):
         ]
 
     if test:
-        mybd = SaveData()
+        user = str(input("Enter the user: "))
+        psd = getpass.getpass(prompt="Enter database password:")
+        mybd = DBConnector(user=user,
+                        password=psd)
         for block in blocks:
             algas.transaction_test(block, mybd)
 
@@ -54,7 +57,7 @@ def main(params):
         db = str(input("Enter the database: "))
         user = str(input("Enter the user: "))
         psd = getpass.getpass(prompt="Enter database password:")
-        mybd = SaveData(host=host,
+        mybd = DBConnector(host=host,
                         database=db, 
                         user=user,
                         password=psd)
