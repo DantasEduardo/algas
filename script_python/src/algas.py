@@ -10,11 +10,21 @@ from src.sensores.bmp180 import BPM180
 QUERY_INFOS = f"INSERT INTO infos(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES (%s,%s,%s,%s,%s)"
 QUERY_MEDIDAS = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
 
-def transaction_test(block, bd):
+def transaction_test(block, bd, s3, save_s3, save_bd):
     print("Started transaction testing...")
     data = date.today()
     for value in block: 
         start_time = time.time() 
+        to_s3_info = {'time_taken':[],
+                      'bytes_used':[],
+                      'cpu_used':[],
+                      'ram_used':[],
+                      'ingestion_date':[]}
+        
+        to_s3_medidas = {'sensor':[],                      
+                         'value':[],                    
+                         'ingestion_date':[]}
+
         bytes_int = 0 
         for i in range(value): 
             air_speed = round(random.uniform(0, 120),2) 
@@ -28,13 +38,34 @@ def transaction_test(block, bd):
         ram = psutil.virtual_memory().percent
 
         bd.insert(QUERY_INFOS, [execution_time, bytes_int, cpu, ram, data])
-        bd.insert(QUERY_MEDIDAS, ["BMP180", atmospheric_pressure, data])
-        bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
+        bd.insert(QUERY_MEDIDAS, ["block_test", atmospheric_pressure, data])
+        bd.insert(QUERY_MEDIDAS, ["block_test", air_speed, data])
 
+        if save_s3:
+            to_s3_info['time_taken'].append(execution_time)
+            to_s3_info['bytes_used'].append(bytes_int) 
+            to_s3_info['cpu_used'].append(cpu) 
+            to_s3_info['ram_used'].append(ram) 
+            to_s3_info['ingestion_date'].append(data)
+            
+            to_s3_medidas['sensor'].append("BMP180") 
+            to_s3_medidas['value'].append(atmospheric_pressure)
+            to_s3_medidas['ingestion_date'].append(data)
+            to_s3_medidas['sensor'].append("anemometro")
+            to_s3_medidas['value'].append( air_speed)
+            to_s3_medidas['ingestion_date'].append(data)
+
+    if save_s3:
+        s3.s3_upload(to_s3_info, 'info')    
+        s3.s3_upload(to_s3_medidas, 'medidas') 
+        
     print(f"{value} concluded")
 
-def run(bd):
+def run(bd, s3, save_s3, save_bd):
     print("Started simulation")
+    to_s3_medidas = {'sensor':[],                      
+                    'value':[],                    
+                    'ingestion_date':[]}
     bpm = BPM180()
     anemometro = Anemometro()
 
@@ -60,5 +91,20 @@ def run(bd):
         bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
         bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
 
-        count -= 1
+        if save_s3:
+            to_s3_medidas['sensor'].append("BMP180") 
+            to_s3_medidas['value'].append(pressure)
+            to_s3_medidas['ingestion_date'].append(data)
+            to_s3_medidas['sensor'].append("BMP180") 
+            to_s3_medidas['value'].append(temperature)
+            to_s3_medidas['ingestion_date'].append(data)
+            to_s3_medidas['sensor'].append("anemometro")
+            to_s3_medidas['value'].append( air_speed)
+            to_s3_medidas['ingestion_date'].append(data)
 
+        count -= 1
+    
+    if save_s3:
+        print("Upload data to S3")
+        s3.s3_upload(to_s3_medidas, 'medidas') 
+    
