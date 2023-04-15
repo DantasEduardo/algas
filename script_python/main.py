@@ -45,9 +45,12 @@ def main(params):
         ]
 
     if test:
+        db = str(input("Enter the database: "))
         user = str(input("Enter the user: "))
         psd = getpass.getpass(prompt="Enter database password:")
-        mybd = DBConnector(user=user,
+        mybd = DBConnector(
+                        database=db, 
+                        user=user,
                         password=psd)
         for block in blocks:
             algas.transaction_test(block, mybd)
