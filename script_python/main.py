@@ -1,7 +1,7 @@
 import argparse
 import getpass
 import time
-from src.utils.db_connector import DBConnector
+from src.utils.db_connector import DBConnector, S3Connection
 import src.algas as algas 
 
 def time_execution(fn):
@@ -17,22 +17,22 @@ def time_execution(fn):
 def main(params):
     blocks = []
     test = False
-    if params.first:
+    if params['first']:
         test = True
         print("Setting first test")
         blocks.append([x for x in range(1, 1000, 100)])
 
-    if params.second:
+    if params['second']:
         test = True
         print("Setting second test")
         blocks.append([x for x in range(1, 1000, 10)])
 
-    if params.third:
+    if params['third']:
         test = True
         print("Setting third test")
         blocks.append([x for x in range(1, 1000, 1)])
 
-    if params.all:
+    if params['all']:
         test = True
         print("Setting all tests")
         blocks = [
@@ -42,18 +42,23 @@ def main(params):
                 [x for x in range(1, 1000, 10)],
                 [x for x in range(1, 1000, 1)]
             ]
-        ]
+        ]   
 
     if test:
         db = str(input("Enter the database: "))
         user = str(input("Enter the user: "))
         psd = getpass.getpass(prompt="Enter database password:")
-        mybd = DBConnector(
-                        database=db, 
-                        user=user,
-                        password=psd)
+        mybd = DBConnector(database=db, 
+                            user=user,
+                            password=psd)
+            
+        if params['upload-s3']:
+            bucket = str(input("Enter the bucket: "))
+            path = str(input("In test case we will create a test partition inyou path\nEnter the path: "))
+            s3 = S3Connection(bucket, path)
+
         for block in blocks:
-            algas.transaction_test(block, mybd)
+            algas.transaction_test(block, mybd, s3, params['upload-s3'])
 
     elif params.run:
         host = str(input("Enter the host: "))
@@ -61,10 +66,11 @@ def main(params):
         user = str(input("Enter the user: "))
         psd = getpass.getpass(prompt="Enter database password:")
         mybd = DBConnector(host=host,
-                        database=db, 
-                        user=user,
-                        password=psd)
-        algas.run(mybd)
+                            database=db, 
+                            user=user,
+                            password=psd)
+            
+        algas.run(mybd, params['upload-s3'])
         
     else:
         raise Exception('Parameters not set.\nType -h to see all parameters.')    
@@ -83,6 +89,10 @@ if __name__ == "__main__":
     
     parser.add_argument('-r','--run', default=False, action='store_true', 
                         help='run the sensor simulator')
+    
+    parser.add_argument('-s3','--upload-s3', default=False, action='store_true', 
+                        help='upload the data to a bucket s3')
+    
     args = parser.parse_args()
 
     main(args)
