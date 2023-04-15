@@ -34,6 +34,7 @@ def transaction_test(block, bd):
     print(f"{value} concluded")
 
 def run(bd):
+    print("Started simulation")
     bpm = BPM180()
     anemometro = Anemometro()
 
@@ -54,6 +55,7 @@ def run(bd):
         pressure = bpm.simulate_pressure(pressure_mean)
         air_speed = anemometro.simulate_speed_air(air_speed_mean)
 
+        print("Insert data into bd")
         bd.insert(QUERY_MEDIDAS, ["BMP180", pressure, data])
         bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
         bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
