@@ -54,7 +54,7 @@ def main(params):
             
         if params.upload_s3:
             bucket = str(input("Enter the bucket: "))
-            path = str(input("In test case we will create a test partition inyou path\nEnter the path: "))
+            path = str(input("In test case we will create a test partition in your path\nEnter the path: "))
             s3 = S3Connection(bucket, path)
         else:
             s3 = None
@@ -74,7 +74,7 @@ def main(params):
         
         if params.upload_s3:
             bucket = str(input("Enter the bucket: "))
-            path = str(input("In test case we will create a test partition inyou path\nEnter the path: "))
+            path = str(input("In test case we will create a test partition in your path\nEnter the path: "))
             s3 = S3Connection(bucket, path)
         else:
             s3 = None
