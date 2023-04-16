@@ -10,7 +10,7 @@ from src.sensores.bmp180 import BPM180
 QUERY_INFOS = f"INSERT INTO infos(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES (%s,%s,%s,%s,%s)"
 QUERY_MEDIDAS = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
 
-def transaction_test(block, bd, s3, save_s3, save_bd):
+def transaction_test(block, bd, s3, save_s3=False):
     print("Started transaction testing...")
     data = date.today()
     for value in block: 
@@ -61,7 +61,7 @@ def transaction_test(block, bd, s3, save_s3, save_bd):
         
     print(f"{value} concluded")
 
-def run(bd, s3, save_s3, save_bd):
+def run(bd, s3=None, save_s3=False):
     print("Started simulation")
     to_s3_medidas = {'sensor':[],                      
                     'value':[],                    
