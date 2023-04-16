@@ -36,7 +36,7 @@ class S3Connection:
         self.path_info = path+'/info/'
         self.path_medidas = path+'/medidas/'
         try:
-            wr.s3.does_object_exist(f"s3://{self.bucket}/{self.path}")
+            wr.s3.does_object_exist(f"s3://{self.bucket}/{path}")
         except:
             raise Exception ("Verify you have access to this bucket or miss type the bucket or path")
 
