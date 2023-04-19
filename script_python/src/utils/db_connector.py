@@ -1,6 +1,8 @@
 import awswrangler as wr
 import pandas as pd
 import mysql.connector
+import json
+from azure.iot.device import IoTHubDeviceClient, Message
 
 class DBConnector:
     def __init__(self, host:str='localhost', user:str='root', password:str=None, database:str=None):
@@ -55,3 +57,28 @@ class S3Connection:
             )
         else:
             raise Exception("Invalid type")
+
+class IoTHub:
+    def __init__(self, connection_string:str, device_id:str) -> None:
+        self.client
+        self.id = 0
+        self.device_id = device_id
+        try:
+            self.client = IoTHubDeviceClient.create_from_connection_string(connection_string, 
+                                                                           device_id=device_id)
+            self.client.connect()
+            print("Connection to Azure IoT Hub successful!")
+        except:
+            raise Exception("Connection to Azure IoT Hub failed.\nVerify your credentials or internet connection")
+
+    def send_message(self, values:list) -> None:
+
+
+        self.client.send_message(Message(
+                                    json.dumps({"messageId":self.id,
+                                            "deviceId":self.device_id,
+                                            "temperature":values[0],
+                                            "humidity":values[1],
+                                            "air_speed":values[2]})
+        ))
+        self.id+=1
