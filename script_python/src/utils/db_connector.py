@@ -59,13 +59,11 @@ class S3Connection:
             raise Exception("Invalid type")
 
 class IoTHub:
-    def __init__(self, connection_string:str, device_id:str) -> None:
+    def __init__(self, connection_string:str) -> None:
         self.client = None
         self.id = 0
-        self.device_id = device_id
         try:
-            self.client = IoTHubDeviceClient.create_from_connection_string(connection_string, 
-                                                                           device_id=device_id)
+            self.client = IoTHubDeviceClient.create_from_connection_string(connection_string)
             self.client.connect()
             print("Connection to Azure IoT Hub successful!")
         except:

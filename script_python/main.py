@@ -102,9 +102,8 @@ def main(params):
             s3 = None
 
         if params.azure:
-            id = input("Device Id: ")
             conection_str = getpass.getpass(prompt="Enter conection string:")
-            iot = IoTHub(connection_string=conection_str,device_id=id)
+            iot = IoTHub(connection_string=conection_str)
         else:
             iot = None
 

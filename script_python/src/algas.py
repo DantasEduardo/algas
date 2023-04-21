@@ -103,6 +103,7 @@ def run(bd, s3=None, iot=None):
             to_s3_medidas['ingestion_date'].append(data)
 
         if iot:
+            print("Insert data into IoT Hub")
             iot.send_message([temperature, pressure, air_speed])
 
         count -= 1
