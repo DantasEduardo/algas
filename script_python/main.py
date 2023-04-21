@@ -74,7 +74,7 @@ def main(params):
         for block in blocks:
             algas.transaction_test(block, mybd, s3)
 
-    if params.run:
+    elif params.run:
         response = input("Is it a local test?(y/n): ")
         if response.lower() == 'y':
             db = input("Enter the database: ")
