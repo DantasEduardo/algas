@@ -60,7 +60,7 @@ class S3Connection:
 
 class IoTHub:
     def __init__(self, connection_string:str, device_id:str) -> None:
-        self.client
+        self.client = None
         self.id = 0
         self.device_id = device_id
         try:
@@ -74,11 +74,5 @@ class IoTHub:
     def send_message(self, values:list) -> None:
 
 
-        self.client.send_message(Message(
-                                    json.dumps({"messageId":self.id,
-                                            "deviceId":self.device_id,
-                                            "temperature":values[0],
-                                            "humidity":values[1],
-                                            "air_speed":values[2]})
-        ))
+        self.client.send_message(Message(f'"temperature":{values[0]}/"humidity":{values[1]}/"humidity":{values[2]}'))
         self.id+=1
