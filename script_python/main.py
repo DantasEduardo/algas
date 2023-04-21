@@ -103,7 +103,7 @@ def main(params):
 
         if params.azure:
             id = input("Device Id: ")
-            conection_str = getpass.getpass(prompt="Enter database password:")
+            conection_str = getpass.getpass(prompt="Enter conection string:")
             iot = IoTHub(connection_string=conection_str,device_id=id)
         else:
             iot = None
