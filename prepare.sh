@@ -9,5 +9,11 @@ sudo apt install docker-ce
 
 echo "Creating MySQL database"
 cd database
-sudo docker build mysql_container .
+sudo docker build -t mysql_container .
 sudo docker run --name bd -p 3306:3306 -e MYSQL_ROOT_PASSWORD=urubu100 -d mysql_container
+
+echo "Setup python"
+apt install python3-pip -y
+cd ..
+cd script_python/
+pip install -r requirements.txt
