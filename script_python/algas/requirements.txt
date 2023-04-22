@@ -2,3 +2,5 @@ psutil
 mysql-connector-python
 azure-iot-device
 awswrangler
+pyarrow
+fastparquet

@@ -26,6 +26,10 @@ class DBConnector:
         self.mycursor.execute(query, values)
         self.mydb.commit()
 
+    def select(self, query:str) -> dict:
+        """Select a register in the database"""
+        self.mycursor.execute(query)
+        return self.mycursor.fetchall()
 
     def close(self) -> None:
         """Close the conection with the database"""
