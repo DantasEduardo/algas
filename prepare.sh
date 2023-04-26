@@ -15,5 +15,5 @@ sudo docker run --name bd -p 3306:3306 -e MYSQL_ROOT_PASSWORD=urubu100 -d mysql_
 echo "Setup python"
 apt install python3-pip -y
 cd ..
-cd script_python/
+cd script_python/algas/
 pip install -r requirements.txt
