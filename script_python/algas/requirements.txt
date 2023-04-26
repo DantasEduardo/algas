@@ -1,6 +1,6 @@
 psutil
 mysql-connector-python
 azure-iot-device
-awswrangler
+awswrangler==3.0.0b2
 pyarrow
 fastparquet
