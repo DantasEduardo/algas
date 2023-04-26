@@ -92,7 +92,7 @@ def run(bd:object, s3:object=None, iot:object=None) -> None:
     air_speed_mean = anemometro.generate_speed_air_mean()
 
     count = 60
-    while True:
+    while bpm.get_batery() > 0 and anemometro.get_batery() > 0:
         data = date.today()
         if count < 60:
             #after 60 times change the mean randomly
@@ -124,7 +124,8 @@ def run(bd:object, s3:object=None, iot:object=None) -> None:
 
             if iot:
                 print("Insert data into IoT Hub")
-                iot.send_message([temperature, pressure, air_speed])
+                iot.send_message([temperature, pressure, air_speed, 
+                                  bpm.get_batery(), anemometro.get_batery()])
         else:
             print("Error getting data")
 
