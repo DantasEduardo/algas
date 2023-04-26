@@ -86,25 +86,28 @@ def run(bd, s3=None, iot=None):
         pressure = bpm.simulate_pressure(pressure_mean)
         air_speed = anemometro.simulate_speed_air(air_speed_mean)
 
-        print("Insert data into bd")
-        bd.insert(QUERY_MEDIDAS, ["BMP180", pressure, data])
-        bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
-        bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
+        if random.randint(0,10)>3:
+            print("Insert data into bd")
+            bd.insert(QUERY_MEDIDAS, ["BMP180", pressure, data])
+            bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
+            bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
 
-        if s3:
-            to_s3_medidas['sensor'].append("BMP180") 
-            to_s3_medidas['value'].append(pressure)
-            to_s3_medidas['ingestion_date'].append(data)
-            to_s3_medidas['sensor'].append("BMP180") 
-            to_s3_medidas['value'].append(temperature)
-            to_s3_medidas['ingestion_date'].append(data)
-            to_s3_medidas['sensor'].append("anemometro")
-            to_s3_medidas['value'].append( air_speed)
-            to_s3_medidas['ingestion_date'].append(data)
+            if s3:
+                to_s3_medidas['sensor'].append("BMP180") 
+                to_s3_medidas['value'].append(pressure)
+                to_s3_medidas['ingestion_date'].append(data)
+                to_s3_medidas['sensor'].append("BMP180") 
+                to_s3_medidas['value'].append(temperature)
+                to_s3_medidas['ingestion_date'].append(data)
+                to_s3_medidas['sensor'].append("anemometro")
+                to_s3_medidas['value'].append( air_speed)
+                to_s3_medidas['ingestion_date'].append(data)
 
-        if iot:
-            print("Insert data into IoT Hub")
-            iot.send_message([temperature, pressure, air_speed])
+            if iot:
+                print("Insert data into IoT Hub")
+                iot.send_message([temperature, pressure, air_speed])
+        else:
+            print("Error getting data")
 
         count -= 1
     
