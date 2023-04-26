@@ -37,6 +37,7 @@ class DBConnector:
         self.mydb.close()
 
 class S3Connection:
+    """Create a connection to AWS S3 bucket"""
     def __init__(self, bucket:str=None, path:str=None) -> None:
         self.bucket = bucket
         self.path_info = path+'/info/'
@@ -47,6 +48,7 @@ class S3Connection:
             raise Exception ("Verify you have access to this bucket or miss type the bucket or path")
 
     def s3_upload(self, list:dict, type:str) -> None:
+        """Upload data to S3"""
         if type=="info":    
             wr.s3.to_parquet(
                 df = pd.DataFrame(list),
@@ -63,6 +65,7 @@ class S3Connection:
             raise Exception("Invalid type")
 
 class IoTHub:
+    """Create a connection to Azure IoT Hub"""
     def __init__(self, connection_string:str) -> None:
         self.client = None
         self.id = 0
@@ -74,5 +77,6 @@ class IoTHub:
             raise Exception("Connection to Azure IoT Hub failed.\nVerify your credentials or internet connection")
 
     def send_message(self, values:list) -> None:
+        """Send a message to IoT Hub"""
         self.client.send_message(Message(f'"temperature":{values[0]}/"humidity":{values[1]}/"humidity":{values[2]}'))
         self.id+=1

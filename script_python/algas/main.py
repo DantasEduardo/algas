@@ -14,7 +14,13 @@ def time_execution(fn):
     return wrapper
 
 @time_execution
-def main(params):
+def main(params: dict) -> None:
+    """
+    Orchestrator to execute the algas test or execute the sensors simulation
+
+    Args:
+        params (dict): a dictionary of parameters for execution
+    """
     blocks = []
     test = False
     if params.first:

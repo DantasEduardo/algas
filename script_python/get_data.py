@@ -4,7 +4,15 @@ import pandas as pd
 from algas.src.utils.db_connector import DBConnector
 
 
-def run(db:object) -> None:
+def run(db:DBConnector) -> None:
+    """
+    Run the query in the database and save the results in a parquet file
+
+    Args:
+        db (DBConnector): a class to comunicate with the database   
+
+    """
+
     results = db.select("SELECT * FROM infos;")
 
     result = {"time_taken": [],
@@ -24,7 +32,12 @@ def run(db:object) -> None:
 
 
 def main(parameters:dict)->None:
-    """Orchestrator to get and analyze the data from algas"""
+    """
+    Orchestrator to get and analyze the data from algas
+    
+    Args:
+        parameters (dict): a dictionary of parameters for execution
+    """
 
     if parameters.local:
         db = input("Enter the database: ")

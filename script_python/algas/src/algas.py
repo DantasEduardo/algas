@@ -10,7 +10,16 @@ from src.sensores.bmp180 import BPM180
 QUERY_INFOS = f"INSERT INTO infos(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES (%s,%s,%s,%s,%s)"
 QUERY_MEDIDAS = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
 
-def transaction_test(block, bd, s3):
+def transaction_test(block:list, bd:object, s3:object) -> None:
+    """
+    Test a number of transactions in a local machine or in cloud and get performance metrics
+    
+    Args:
+        block (list): a list of numbers
+        bd (DBConnector): a class to comunicate with the database   
+        s3 (S3Connection): a class to connect to the AWS S3 bucket
+    """
+
     print("Started transaction testing...")
     data = date.today()
     for value in block: 
@@ -27,6 +36,7 @@ def transaction_test(block, bd, s3):
 
         bytes_int = 0 
         for i in range(value): 
+            #fake colect metrics
             air_speed = round(random.uniform(0, 120),2) 
             atmospheric_pressure = round(random.uniform(1000, 1020),2) 
             bytes_int = bytes_int + getsizeof(air_speed) + getsizeof(atmospheric_pressure)
@@ -61,7 +71,15 @@ def transaction_test(block, bd, s3):
         
     print(f"{value} concluded")
 
-def run(bd, s3=None, iot=None):
+def run(bd:object, s3:object=None, iot:object=None) -> None:
+    """
+    Simulate the operation of BMP180 and a Anemometro
+    
+    Args:
+        bd (DBConnector): a class to comunicate with the database   
+        s3 (S3Connection): a class to connect to the AWS S3 bucket
+        iot (IoTHub): a class to connect to the Azure IoT Hub
+    """
     print("Started simulation")
     to_s3_medidas = {'sensor':[],                      
                     'value':[],                    
@@ -77,10 +95,11 @@ def run(bd, s3=None, iot=None):
     while True:
         data = date.today()
         if count < 60:
+            #after 60 times change the mean randomly
             temperature_mean = bpm.generate_temperature_mean()
             pressure_mean = bpm.generate_pressure_mean()
             air_speed_mean = anemometro.generate_speed_air_mean()
-            count -= 1
+            count = 60
         
         temperature = bpm.simulate_temperature(temperature_mean)
         pressure = bpm.simulate_pressure(pressure_mean)
@@ -110,8 +129,4 @@ def run(bd, s3=None, iot=None):
             print("Error getting data")
 
         count -= 1
-    
-    if s3:
-        print("Upload data to S3")
-        s3.s3_upload(to_s3_medidas, 'medidas') 
     
