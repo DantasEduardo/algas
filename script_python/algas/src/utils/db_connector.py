@@ -78,5 +78,5 @@ class IoTHub:
 
     def send_message(self, values:list) -> None:
         """Send a message to IoT Hub"""
-        self.client.send_message(Message(f'"temperature":{values[0]}/"humidity":{values[1]}/"air-spped":{values[2]}/"bateryBPM:{values[3]}/"bateryAne":{values[4]}'))
+        self.client.send_message(Message(f'{values[0]};{values[1]};{values[2]};{int(values[3])};{int(values[4])}'))
         self.id+=1
