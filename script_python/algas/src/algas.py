@@ -125,7 +125,10 @@ def run(bd:object, s3:object=None, iot:object=None) -> None:
             if iot:
                 print("Insert data into IoT Hub")
                 iot.send_message([temperature, pressure, air_speed, 
-                                  bpm.get_batery(), anemometro.get_batery()])
+                                  bpm.get_batery(), anemometro.get_batery()],
+                                  'sensor', 
+                                  True if bpm.get_batery() < 25 and anemometro.get_batery()< 25\
+                                       else False)
         else:
             print("Error getting data")
 

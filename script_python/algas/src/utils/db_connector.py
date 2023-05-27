@@ -76,7 +76,10 @@ class IoTHub:
         except:
             raise Exception("Connection to Azure IoT Hub failed.\nVerify your credentials or internet connection")
 
-    def send_message(self, values:list) -> None:
+    def send_message(self, values:list, tag:str, alert:bool) -> None:
         """Send a message to IoT Hub"""
-        self.client.send_message(Message(f'{values[0]};{values[1]};{values[2]};{int(values[3])};{int(values[4])}'))
+        msg = Message(f'{values[0]};{values[1]};{values[2]};{int(values[3])};{int(values[4])}')
+        msg.custom_properties["SensorId"] = tag
+        msg.custom_properties["Alert"] = alert
+        self.client.send_message(msg)
         self.id+=1
