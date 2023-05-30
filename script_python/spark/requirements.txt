@@ -1,0 +1,5 @@
+pyspark
+mysql-connector-python
+pandas
+pyarrow
+fastparquet
