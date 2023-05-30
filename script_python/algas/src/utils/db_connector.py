@@ -78,8 +78,11 @@ class IoTHub:
 
     def send_message(self, values:list, tag:str, alert:bool) -> None:
         """Send a message to IoT Hub"""
-        msg = Message(f'{values[0]};{values[1]};{values[2]};{int(values[3])};{int(values[4])}')
+        msg = Message(f'"{values[0]}/{values[1]}/{values[2]}/{int(values[3])}/{int(values[4])}"')
+        msg.content_type = "application/json"
+        msg.content_encoding = "utf-8"
         msg.custom_properties["SensorId"] = tag
         msg.custom_properties["Alert"] = alert
+        print(f"sending message # {self.id}")
         self.client.send_message(msg)
         self.id+=1

@@ -51,25 +51,28 @@ def main(params: dict) -> None:
         ]   
 
     if test:
-        response = input("Is it a local test?(y/n): ")
-        if response.lower() == 'y':
-            db = input("Enter the database: ")
-            user = input("Enter the user: ")
-            psd = getpass.getpass(prompt="Enter database password:")
-            mybd = DBConnector(database=db, 
-                                user=user,
-                                password=psd)
-            
-        elif response.lower() == 'n':
-            host = input("Enter the host: ")
-            db = input("Enter the database: ")
-            user = input("Enter the user: ")
-            psd = getpass.getpass(prompt="Enter database password:")
-            mybd = DBConnector(host=host,
-                                database=db, 
-                                user=user,
-                                password=psd)
-
+        if params.database:
+            response = input("Is it a local test?(y/n): ")
+            if response.lower() == 'y':
+                db = input("Enter the database: ")
+                user = input("Enter the user: ")
+                psd = getpass.getpass(prompt="Enter database password:")
+                mybd = DBConnector(database=db, 
+                                    user=user,
+                                    password=psd)
+                
+            elif response.lower() == 'n':
+                host = input("Enter the host: ")
+                db = input("Enter the database: ")
+                user = input("Enter the user: ")
+                psd = getpass.getpass(prompt="Enter database password:")
+                mybd = DBConnector(host=host,
+                                    database=db, 
+                                    user=user,
+                                    password=psd)
+        else:
+            mybd = None
+        
         if params.upload_s3:
             bucket = input("Enter the bucket: ")
             path = input("In test case we will create a test partition in your path\nEnter the path: ")
@@ -81,24 +84,27 @@ def main(params: dict) -> None:
             algas.transaction_test(block, mybd, s3)
 
     elif params.run:
-        response = input("Is it a local test?(y/n): ")
-        if response.lower() == 'y':
-            db = input("Enter the database: ")
-            user = input("Enter the user: ")
-            psd = getpass.getpass(prompt="Enter database password:")
-            mybd = DBConnector(database=db, 
-                                user=user,
-                                password=psd)
-            
-        elif response.lower() == 'n':
-            host = input("Enter the host: ")
-            db = input("Enter the database: ")
-            user = input("Enter the user: ")
-            psd = getpass.getpass(prompt="Enter database password:")
-            mybd = DBConnector(host=host,
-                                database=db, 
-                                user=user,
-                                password=psd)
+        if params.database:
+            response = input("Is it a local test?(y/n): ")
+            if response.lower() == 'y':
+                db = input("Enter the database: ")
+                user = input("Enter the user: ")
+                psd = getpass.getpass(prompt="Enter database password:")
+                mybd = DBConnector(database=db, 
+                                    user=user,
+                                    password=psd)
+                
+            elif response.lower() == 'n':
+                host = input("Enter the host: ")
+                db = input("Enter the database: ")
+                user = input("Enter the user: ")
+                psd = getpass.getpass(prompt="Enter database password:")
+                mybd = DBConnector(host=host,
+                                    database=db, 
+                                    user=user,
+                                    password=psd)
+        else:
+            mybd = None
         
         if params.upload_s3:
             bucket = input("Enter the bucket: ")
@@ -138,6 +144,9 @@ if __name__ == "__main__":
     
     parser.add_argument('-az','--azure', default=False, action='store_true', 
                         help='upload the data in IoT hub')
+    
+    parser.add_argument('-db','--database', default=False, action='store_true', 
+                        help='insert data in a database')
     
     args = parser.parse_args()
 

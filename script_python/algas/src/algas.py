@@ -71,7 +71,7 @@ def transaction_test(block:list, bd:object, s3:object) -> None:
         
     print(f"{value} concluded")
 
-def run(bd:object, s3:object=None, iot:object=None) -> None:
+def run(bd:object=None, s3:object=None, iot:object=None) -> None:
     """
     Simulate the operation of BMP180 and a Anemometro
     
@@ -92,7 +92,9 @@ def run(bd:object, s3:object=None, iot:object=None) -> None:
     air_speed_mean = anemometro.generate_speed_air_mean()
 
     count = 60
-    while bpm.get_batery() > 0 and anemometro.get_batery() > 0:
+    # while bpm.get_batery() > 0 and anemometro.get_batery() > 0:
+    test = 0
+    while test<10:
         data = date.today()
         if count < 60:
             #after 60 times change the mean randomly
@@ -106,10 +108,12 @@ def run(bd:object, s3:object=None, iot:object=None) -> None:
         air_speed = anemometro.simulate_speed_air(air_speed_mean)
 
         if random.randint(0,10)>3:
-            print("Insert data into bd")
-            bd.insert(QUERY_MEDIDAS, ["BMP180", pressure, data])
-            bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
-            bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
+
+            if bd:
+                print("Insert data into bd")
+                bd.insert(QUERY_MEDIDAS, ["BMP180", pressure, data])
+                bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
+                bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
 
             if s3:
                 to_s3_medidas['sensor'].append("BMP180") 
@@ -132,5 +136,6 @@ def run(bd:object, s3:object=None, iot:object=None) -> None:
         else:
             print("Error getting data")
 
-        count -= 1
-    
+        count-=1
+        test+=1
+        time.sleep(30)
