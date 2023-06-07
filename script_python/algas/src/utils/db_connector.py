@@ -69,6 +69,7 @@ class IoTHub:
     def __init__(self, connection_string:str) -> None:
         self.client = None
         self.id = 0
+
         try:
             self.client = IoTHubDeviceClient.create_from_connection_string(connection_string)
             self.client.connect()
@@ -76,13 +77,17 @@ class IoTHub:
         except:
             raise Exception("Connection to Azure IoT Hub failed.\nVerify your credentials or internet connection")
 
-    def send_message(self, values:list, tag:str, alert:bool) -> None:
+    def send_message(self, sensor:str, values:list, tag:str, alert:bool) -> None:
         """Send a message to IoT Hub"""
-        msg = Message(f'"{values[0]}/{values[1]}/{values[2]}/{int(values[3])}/{int(values[4])}"')
+        payload = f"{sensor}/"+"/".join(str(round(value,2)) if isinstance(value,(int,float)) else str(value) for value in values)
+        
+        msg = Message(f"{payload.replace(' ','_')}")
+
         msg.content_type = "application/json"
         msg.content_encoding = "utf-8"
         msg.custom_properties["SensorId"] = tag
         msg.custom_properties["Alert"] = alert
+        
         print(f"sending message # {self.id}")
         self.client.send_message(msg)
         self.id+=1

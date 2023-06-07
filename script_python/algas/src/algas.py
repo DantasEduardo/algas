@@ -1,11 +1,13 @@
 import psutil
 import random
 import time
-from datetime import date
+from datetime import datetime
 from sys import getsizeof 
 from src.sensores.anemometro import Anemometro
 from src.sensores.bmp180 import BPM180
-
+from src.sensores.npk import NPK
+from src.sensores.dht11 import DHT11
+from src.sensores.tcrt5000 import TCRT5000
 
 QUERY_INFOS = f"INSERT INTO infos(time_taken, bytes_used, cpu_used, ram_used, ingestion_date) VALUES (%s,%s,%s,%s,%s)"
 QUERY_MEDIDAS = f"INSERT INTO medidas(sensor, value, ingestion_date) VALUES (%s,%s,%s)"
@@ -21,7 +23,7 @@ def transaction_test(block:list, bd:object, s3:object) -> None:
     """
 
     print("Started transaction testing...")
-    data = date.today()
+    data = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     for value in block: 
         start_time = time.time() 
         to_s3_info = {'time_taken':[],
@@ -86,17 +88,20 @@ def run(bd:object=None, s3:object=None, iot:object=None) -> None:
                     'ingestion_date':[]}
     bpm = BPM180()
     anemometro = Anemometro()
+    npk = NPK()
+    dht = DHT11()
+    tcrt = TCRT5000()
 
     temperature_mean = bpm.generate_temperature_mean()
     pressure_mean = bpm.generate_pressure_mean()
     air_speed_mean = anemometro.generate_speed_air_mean()
 
     count = 60
-    # while bpm.get_batery() > 0 and anemometro.get_batery() > 0:
-    test = 0
-    while test<10:
-        data = date.today()
-        if count < 60:
+    while bpm.get_batery() > 0 and anemometro.get_batery() > 0 and npk.get_batery() > 0\
+      and dht.get_batery() > 0 and tcrt.get_batery() > 0:
+        
+        data = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if count < 1:
             #after 60 times change the mean randomly
             temperature_mean = bpm.generate_temperature_mean()
             pressure_mean = bpm.generate_pressure_mean()
@@ -106,6 +111,10 @@ def run(bd:object=None, s3:object=None, iot:object=None) -> None:
         temperature = bpm.simulate_temperature(temperature_mean)
         pressure = bpm.simulate_pressure(pressure_mean)
         air_speed = anemometro.simulate_speed_air(air_speed_mean)
+        n, p, k = npk.simulate_npk()
+        humidity =  dht.simulate_humidity()
+        capacity = tcrt.simulate_silo_capacity()
+        collected = tcrt.simulate_soybeans_collected()
 
         if random.randint(0,10)>3:
 
@@ -114,28 +123,28 @@ def run(bd:object=None, s3:object=None, iot:object=None) -> None:
                 bd.insert(QUERY_MEDIDAS, ["BMP180", pressure, data])
                 bd.insert(QUERY_MEDIDAS, ["BMP180", temperature, data])
                 bd.insert(QUERY_MEDIDAS, ["anemometro", air_speed, data])
+                bd.insert(QUERY_MEDIDAS, ["NPK", n, data])
+                bd.insert(QUERY_MEDIDAS, ["NPK", p, data])
+                bd.insert(QUERY_MEDIDAS, ["NPK", k, data])
+                bd.insert(QUERY_MEDIDAS, ["DHT11", humidity, data])
+                bd.insert(QUERY_MEDIDAS, ["TCRT5000", capacity, data])
+                bd.insert(QUERY_MEDIDAS, ["TCRT5000", collected, data])
 
             if s3:
-                to_s3_medidas['sensor'].append("BMP180") 
-                to_s3_medidas['value'].append(pressure)
-                to_s3_medidas['ingestion_date'].append(data)
-                to_s3_medidas['sensor'].append("BMP180") 
-                to_s3_medidas['value'].append(temperature)
-                to_s3_medidas['ingestion_date'].append(data)
-                to_s3_medidas['sensor'].append("anemometro")
-                to_s3_medidas['value'].append( air_speed)
-                to_s3_medidas['ingestion_date'].append(data)
+                #TODO:
+                pass
 
             if iot:
                 print("Insert data into IoT Hub")
-                iot.send_message([temperature, pressure, air_speed, 
-                                  bpm.get_batery(), anemometro.get_batery()],
-                                  'sensor', 
-                                  True if bpm.get_batery() < 25 and anemometro.get_batery()< 25\
-                                       else False)
+                iot.send_message('NPK', [n,p,k,npk.get_batery(),data],'sensor',npk.get_batery()<25)
+                iot.send_message('BMP180', [temperature,pressure,bpm.get_batery(),data],'sensor',bpm.get_batery()<25)
+                iot.send_message('anemometro', [air_speed,anemometro.get_batery(),data],'sensor',anemometro.get_batery()<25)
+                iot.send_message('DHT11', [humidity,dht.get_batery(),data],'sensor',dht.get_batery()<25)
+                iot.send_message('TCRT5000', [capacity,collected,tcrt.get_batery(),data],'sensor',tcrt.get_batery()<25)
+
         else:
             print("Error getting data")
+            iot.send_message("Error",["Error getting data"],'sensor',False)
 
         count-=1
-        test+=1
         time.sleep(30)
